@@ -1,0 +1,58 @@
+hp:
+
+============================================================
+TESTING HUGGING FACE BACKEND
+============================================================
+[HF] Initializing...
+[2025-12-01 01:54:05] INFO modeling.py:987: We will use 90% of the memory on device 0 for storing the model, and 10% for the buffer to avoid OOM. You can set `max_memory` in to a higher value to use more memory (at your own risk).
+
+--- Test A: Single Raw String ---
+Output:  ______.
+A. Paris
+B. Brussels
+C. London
+D. Rome
+Answer: A
+
+Which of the following statements about the structure and function of the cell membrane is incorrect?
+A. The phospholipid molecules on the surface
+
+--- Test B: Batch Raw Strings ---
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Output: ['Human-Computer Interaction\n\nBy: Chris Hargrove\n\nThe human-computer interaction (HCI) field is a broad, interdisciplinary discipline that deals with the study of how people interact with computers and other electronic devices. This field includes all aspects of the', ' cold, and the opposite of cold is hot. Is this statement correct?\n\nTo determine whether the given statement "the opposite of hot is cold" is correct, we need to understand what the term "opposite" means in mathematics.\n\nIn mathematics,']
+
+--- Test C: Single Chat ---
+Output: The play "Hamlet" was written by William Shakespeare, an English playwright and poet who lived from 1564 to 1616. He is considered one of the greatest playwrights in the history of Western literature. The play
+
+--- Test D: Batch Chat ---
+A decoder-only architecture is being used, but right-padding was detected! For correct generation results, please set `padding_side='left'` when initializing the tokenizer.
+Output: ['What can I help you with today?', 'Hello! It was nice chatting with you. If you have any other questions or need further assistance, feel free to ask. Have a great day!']
+
+
+
+vllm:
+--- Test A: Single Raw String ---
+Adding requests: 100%|████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 275.47it/s]
+Processed prompts: 100%|████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  2.20it/s, est. speed input: 11.01 toks/s, output: 110.10 toks/s]
+Output:  Paris. The city has a population of approximately 2 million. A total of 3,500,000 people live in the city of Paris, who are of different nationalities (60% are French citizens, 3
+
+
+
+--- Test B: Batch Raw Strings ---
+Adding requests: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 2063.62it/s]
+Processed prompts: 100%|████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00,  5.72it/s, est. speed input: 25.74 toks/s, output: 285.97 toks/s]
+Output: ['2。那么2+2=？____\nA. 4\nB. 6\nC. 9\nD. 10\n答案: C\n\n【多选题】根据《中华人民共和国票据法》，票据丧失后', ' ____.\nA. Cold\nB. Temperature\nC. Cold temperature\nD. Not applicable\nAnswer:\nA\n\nIn the context of human rights and justice, the right to freedom of speech is crucial. In China, which of the following statements']
+
+
+
+--- Test C: Single Chat ---
+Adding requests: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00, 1068.61it/s]
+Processed prompts: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 1/1 [00:00<00:00,  9.66it/s, est. speed input: 232.41 toks/s, output: 125.87 toks/s]
+Output: The play "Hamlet" was written by William Shakespeare.
+
+
+
+--- vLLM Test: Batch Chat ---
+Adding requests: 100%|███████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 1434.44it/s]
+Processed prompts: 100%|███████████████████████████████████████████████████████████████████████████████████████████| 2/2 [00:00<00:00, 24.67it/s, est. speed input: 779.24 toks/s, output: 259.71 toks/s]
+['Hello! How can I assist you today?', 'Goodbye! How can I assist you today?']
