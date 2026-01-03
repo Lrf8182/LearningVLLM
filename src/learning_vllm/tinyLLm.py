@@ -210,7 +210,8 @@ if __name__ == "__main__":
         # Adjusting specifically for vLLM
         vllm_gen_config = {"max_tokens": 50, "temperature": 0.7}
         # Adjusting engine config for vLLM (needs 'model' key usually)
-        vllm_engine_config = {"model": MODEL_ID, "trust_remote_code": True,"gpu_memory_utilization": 0.8}
+        vllm_engine_config = {"model": MODEL_ID, "trust_remote_code": True,
+                              "gpu_memory_utilization": 0.8}
 
         tiny_vllm = TinyLLM(
             engine_type=EngineType.VLLM,

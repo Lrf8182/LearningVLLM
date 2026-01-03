@@ -65,7 +65,8 @@ def main():
         tokenizer.apply_chat_template(
             convo,
             tokenize=False,       
-            add_generation_prompt=True   #Because there is <|im_end|>, add generation prompt must be added regardless of whether it is a supplementary sentence or not.
+            add_generation_prompt=True   #Because there is <|im_end|>, add generation prompt must 
+            # be added regardless of whether it is a supplementary sentence or not.
         )
         for convo in conversations
     ]
