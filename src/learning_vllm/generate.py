@@ -5,6 +5,7 @@ from vllm import LLM, EngineArgs, SamplingParams
 from vllm.utils.argparse_utils import FlexibleArgumentParser
 from transformers import AutoTokenizer
 
+
 def create_parser():
     parser = FlexibleArgumentParser()
     # Add engine args
@@ -14,7 +15,7 @@ def create_parser():
     # parser.set_defaults(max_model_len=8192)
     # Add sampling params
     sampling_group = parser.add_argument_group("Sampling parameters")
-    sampling_group.add_argument("--max-tokens", type=int)  
+    sampling_group.add_argument("--max-tokens", type=int)
     sampling_group.add_argument("--temperature", type=float)
     sampling_group.add_argument("--top-p", type=float)
     sampling_group.add_argument("--top-k", type=int)
@@ -61,38 +62,38 @@ def main(args: dict):
         print("-" * 50)
 
 
- # Apply_chat_template
-    # tokenizer=AutoTokenizer.from_pretrained("Qwen/Qwen3-1.7b",trust_remote_code=True)
-    # conversations = [
-    #     [
-    #         {"role": "user", "content": "Hello, my name is"}
-    #     ],
-    #     [
-    #         {"role": "user", "content": "The president of the United States is"}
-    #     ],        [
-    #         {"role": "user", "content": "What is the capital of France?"}
-    #     ],        [
-    #         {"role": "user", "content": "The future of AI is"}
-    #     ]
-    # ]
-    # prompts=[
-    #     tokenizer.apply_chat_template(
-    #         convo,
-    #         tokenize=False,       
-    #         add_generation_prompt=True
-    #     )
-    #     for convo in conversations
-    # ]
+# Apply_chat_template
+# tokenizer=AutoTokenizer.from_pretrained("Qwen/Qwen3-1.7b",trust_remote_code=True)
+# conversations = [
+#     [
+#         {"role": "user", "content": "Hello, my name is"}
+#     ],
+#     [
+#         {"role": "user", "content": "The president of the United States is"}
+#     ],        [
+#         {"role": "user", "content": "What is the capital of France?"}
+#     ],        [
+#         {"role": "user", "content": "The future of AI is"}
+#     ]
+# ]
+# prompts=[
+#     tokenizer.apply_chat_template(
+#         convo,
+#         tokenize=False,
+#         add_generation_prompt=True
+#     )
+#     for convo in conversations
+# ]
 
-    # print(f"\n[Debug] Prompt 1 sent to vLLM:\n{prompts[0]!r}\n")
+# print(f"\n[Debug] Prompt 1 sent to vLLM:\n{prompts[0]!r}\n")
 
-    # sampling_params = SamplingParams(temperature=0.7, max_tokens=1000)
-    # outputs = llm.generate(prompts, sampling_params)
-    # print("-" * 50)
-    # for output in outputs:
-    #     print(f"Generated: {output.outputs[0].text}")
-    #     print("-" * 50)
-    #     print("\n")
+# sampling_params = SamplingParams(temperature=0.7, max_tokens=1000)
+# outputs = llm.generate(prompts, sampling_params)
+# print("-" * 50)
+# for output in outputs:
+#     print(f"Generated: {output.outputs[0].text}")
+#     print("-" * 50)
+#     print("\n")
 
 
 if __name__ == "__main__":

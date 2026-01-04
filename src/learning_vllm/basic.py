@@ -7,7 +7,7 @@ from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
 # from learning_vllm.utils.common import test1
-from .utils.common import test1 # . means current directory: directory where contains basic.py  
+from .utils.common import test1  # . means current directory: directory where contains basic.py
 # in a import b, in b import a will cause circular import error
 
 
@@ -37,35 +37,33 @@ sampling_params = SamplingParams(temperature=0.8, top_p=0.95)
 #         print("-" * 60)
 
 
- 
 # With apply chat template
 def main():
-
-    llm = LLM(model="Qwen/Qwen3-1.7b", gpu_memory_utilization=0.8,max_model_len=10000)
-    tokenizer=AutoTokenizer.from_pretrained("Qwen/Qwen3-1.7b",trust_remote_code=True)
+    llm = LLM(model="Qwen/Qwen3-1.7b", gpu_memory_utilization=0.8, max_model_len=10000)
+    tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen3-1.7b", trust_remote_code=True)
     conversations = [
         [
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Hello, my name is"}
+            {"role": "user", "content": "Hello, my name is"},
         ],
         [
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "The president of the United States is"}
-        ],        
+            {"role": "user", "content": "The president of the United States is"},
+        ],
         [
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "What is the capital of France?"}
-        ],        
+            {"role": "user", "content": "What is the capital of France?"},
+        ],
         [
             {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "The future of AI is"}
-        ]
+            {"role": "user", "content": "The future of AI is"},
+        ],
     ]
-    prompts=[
+    prompts = [
         tokenizer.apply_chat_template(
             convo,
-            tokenize=False,       
-            add_generation_prompt=True   #Because there is <|im_end|>, add generation prompt must 
+            tokenize=False,
+            add_generation_prompt=True,  # Because there is <|im_end|>, add generation prompt must
             # be added regardless of whether it is a supplementary sentence or not.
         )
         for convo in conversations
@@ -80,12 +78,6 @@ def main():
         print(f"Generated: {output.outputs[0].text}")
         print("-" * 50)
         print("\n")
-
-   
-
-
-
-
 
 
 if __name__ == "__main__":

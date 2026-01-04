@@ -7,6 +7,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 # 使用 @tool 装饰器，LangChain 会自动提取函数名、参数类型和 docstring 作为工具描述
 # ==========================================
 
+
 @tool
 def google_search(query: str) -> str:
     """
@@ -18,6 +19,7 @@ def google_search(query: str) -> str:
         return "Google 搜索结果: 今天旧金山天气晴朗，气温 20 摄氏度。"
     return "Google 搜索结果: Llama 3 是 Meta 发布的最新的开源大语言模型。"
 
+
 @tool
 def read_local_file(filename: str) -> str:
     """
@@ -26,6 +28,7 @@ def read_local_file(filename: str) -> str:
     print(f"\n[Tool Called] 正在读取本地文件... 文件名: {filename}")
     # 模拟读取文件
     return f"文件 '{filename}' 的内容是：下周一上午 9 点进行全员技术代码审查。"
+
 
 # 将工具放入列表
 tools = [google_search, read_local_file]
@@ -38,8 +41,8 @@ tools = [google_search, read_local_file]
 llm = ChatOpenAI(
     model="llama3",  # 对应 vLLM 启动时的 --served-model-name
     openai_api_key="token-123",
-    openai_api_base="http://localhost:8000/v1", # vLLM 的地址
-    temperature=0
+    openai_api_base="http://localhost:8000/v1",  # vLLM 的地址
+    temperature=0,
 )
 
 # ==========================================
@@ -53,24 +56,26 @@ llm_with_tools = llm.bind_tools(tools)
 # 4. 测试场景
 # ==========================================
 
+
 def run_agent(user_query):
-    print(f"\n{'='*10} 用户提问: {user_query} {'='*10}")
-    
+    print(f"\n{'=' * 10} 用户提问: {user_query} {'=' * 10}")
+
     messages = [HumanMessage(content=user_query)]
-    
+
     # 让 Llama 3 思考并决定
     ai_msg = llm_with_tools.invoke(messages)
-    
+
     # 检查 AI 是否决定调用工具
     if ai_msg.tool_calls:
         print(f"👉 AI 决定调用工具: {ai_msg.tool_calls[0]['name']}")
         print(f"👉 参数: {ai_msg.tool_calls[0]['args']}")
-        
+
         # --- 在真实的 Agent 循环中，这里会执行工具并将结果返回给 LLM ---
         # --- 这里为了演示清晰，我们只展示到"决策"这一步 ---
     else:
         print("👉 AI 决定直接回答 (不使用工具)")
         print(f"回答: {ai_msg.content}")
+
 
 # --- 测试 1: 应该触发 Google ---
 run_agent("今天旧金山天气怎么样？")

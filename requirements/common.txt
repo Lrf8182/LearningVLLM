@@ -2,3 +2,6 @@ pydantic
 transformers
 vllm==0.11.0
 torch
+colorlog
+pandas
+omegaconf

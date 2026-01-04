@@ -36,17 +36,16 @@ sampling_params = SamplingParams(temperature=0.0)
 
 def main():
     # Create an LLM without prefix caching as a baseline.
-    regular_llm = LLM(model="Qwen/Qwen3-1.7b", gpu_memory_utilization=0.8,
-        max_model_len=8192)
+    regular_llm = LLM(model="Qwen/Qwen3-1.7b", gpu_memory_utilization=0.8, max_model_len=8192)
 
     print("Results without `enable_prefix_caching`")
 
     # ruff: noqa: E501
     # Generate texts from the prompts. The output is a list of RequestOutput objects
     # that contain the prompt, generated text, and other information.
-    start_time=time.perf_counter()
+    start_time = time.perf_counter()
     outputs = regular_llm.generate(generating_prompts, sampling_params)
-    end_time=time.perf_counter()
+    end_time = time.perf_counter()
     elapsed_time = end_time - start_time
 
     regular_generated_texts = []
@@ -69,16 +68,15 @@ def main():
         model="Qwen/Qwen3-1.7b",
         enable_prefix_caching=True,
         gpu_memory_utilization=0.8,
-        max_model_len=8192
-
+        max_model_len=8192,
     )
 
     # Warmup so that the shared prompt's KV cache is computed.
     prefix_cached_llm.generate(generating_prompts[0], sampling_params)
-    start_time=time.perf_counter()
+    start_time = time.perf_counter()
     # Generate with prefix caching.
     outputs = prefix_cached_llm.generate(generating_prompts, sampling_params)
-    end_time=time.perf_counter()
+    end_time = time.perf_counter()
     elapsed_time = end_time - start_time
     print("Results with `enable_prefix_caching`")
 
@@ -93,13 +91,9 @@ def main():
         print("-" * 50)
     print(f"Used time with prefic cache: {elapsed_time}\n")
 
-
     # Compare the results and display the speedup
     generated_same = all(
-        [
-            regular_generated_texts[i] == cached_generated_texts[i]
-            for i in range(len(prompts))
-        ]
+        [regular_generated_texts[i] == cached_generated_texts[i] for i in range(len(prompts))]
     )
     print(f"Generated answers are the same: {generated_same}")
 

@@ -5,11 +5,13 @@ from pydantic import BaseModel, Field
 # 第一步：用 Pydantic 定义"数据的形状"
 # ==========================================
 
+
 # 定义单个活动
 class Activity(BaseModel):
     name: str = Field(description="活动的名称或地点的名字")
     category: str = Field(description="类别，例如：景点、餐饮、交通、购物")
     is_must_visit: bool = Field(description="根据文本判断用户是否强烈表达了'一定要去'的意愿")
+
 
 # 定义整个行程单
 class TripPlan(BaseModel):
@@ -20,6 +22,7 @@ class TripPlan(BaseModel):
     # 嵌套结构！这是 Pydantic 最强的地方
     activities: List[Activity] = Field(description="所有提到的活动列表")
     budget_note: Optional[str] = Field(None, description="关于预算的备注")
+
 
 # ==========================================
 # 第二步：模拟 LLM 的工作 (Extraction)
@@ -38,23 +41,15 @@ mock_llm_response_data = {
     "end_date": "2026-01-12",
     "arrival_airport": "Newark (EWR)",
     "activities": [
-        {
-            "name": "The Friends Experience",
-            "category": "景点",
-            "is_must_visit": True
-        },
-        {
-            "name": "Friends Apartment Exterior",
-            "category": "景点",
-            "is_must_visit": True
-        },
+        {"name": "The Friends Experience", "category": "景点", "is_must_visit": True},
+        {"name": "Friends Apartment Exterior", "category": "景点", "is_must_visit": True},
         {
             "name": "Central Park",
             "category": "景点",
-            "is_must_visit": False # 用户只说"走走"，语气没那么强烈
-        }
+            "is_must_visit": False,  # 用户只说"走走"，语气没那么强烈
+        },
     ],
-    "budget_note": "稍微控制一下"
+    "budget_note": "稍微控制一下",
 }
 
 # ==========================================
@@ -67,7 +62,7 @@ try:
 
     print(f"✅ 解析成功！目的地: {trip.destination}")
     print(f"📅 时间: {trip.start_date} -> {trip.end_date}")
-    
+
     print("\n📝 待办事项列表:")
     for item in trip.activities:
         # 这里可以使用 Python 对象的方式访问属性，非常舒服
