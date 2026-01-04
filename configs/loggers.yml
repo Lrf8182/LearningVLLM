@@ -1,0 +1,35 @@
+__default__:
+  level: INFO
+  to_console: true
+  save_path: null
+  mode: null
+  max_bytes: null
+  backup_count:  null
+  log_prefix: "[%(asctime)s,%(msecs)03d][pid=%(process)d][%(levelname)s]"
+  log_data: " > %(message)s"
+  log_suffix: ""
+  date_fmt: "%y-%m-%d %H:%M:%S"
+
+BASIC:
+  level: INFO
+  to_console: true
+  save_path: null
+  mode: null
+  max_bytes: null
+  backup_count:  null
+  log_prefix: "[%(asctime)s,%(msecs)03d][pid=%(process)d][%(levelname)s]"
+  log_data: " > %(message)s"
+  log_suffix: ""
+  date_fmt: "%y-%m-%d %H:%M:%S"
+
+DEBUG:
+  level: DEBUG
+  to_console: true
+  save_path: logs/debug.log
+  mode: "a"
+  max_bytes: 1048576
+  backup_count: 10 
+  log_prefix: "[%(asctime)s,%(msecs)03d][pid=%(process)d][%(levelname)s][%(module)s:L%(lineno)d]"
+  log_data: " > %(message)s"
+  log_suffix: ""
+  date_fmt: "%y-%m-%d %H:%M:%S"
