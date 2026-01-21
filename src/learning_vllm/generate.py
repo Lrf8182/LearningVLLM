@@ -2,7 +2,9 @@
 # SPDX-FileCopyrightText: Copyright contributors to the vLLM project
 
 from vllm import LLM, EngineArgs, SamplingParams
-from vllm.utils.argparse_utils import FlexibleArgumentParser
+# from vllm.utils.argparse_utils import FlexibleArgumentParser
+# 尝试改为 vllm 较新版本的路径
+from vllm.entrypoints.openai.cli_args import FlexibleArgumentParser
 from transformers import AutoTokenizer
 
 
@@ -11,8 +13,8 @@ def create_parser():
     # Add engine args
     EngineArgs.add_cli_args(parser)
     parser.set_defaults(model="Qwen/Qwen3-1.7b")
-    # parser.set_defaults(gpu_memory_utilization=0.7)
-    # parser.set_defaults(max_model_len=8192)
+    parser.set_defaults(gpu_memory_utilization=0.7)
+    parser.set_defaults(max_model_len=8192)
     # Add sampling params
     sampling_group = parser.add_argument_group("Sampling parameters")
     sampling_group.add_argument("--max-tokens", type=int)

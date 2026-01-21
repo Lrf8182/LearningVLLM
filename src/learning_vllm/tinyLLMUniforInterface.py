@@ -3,6 +3,14 @@ from enum import Enum
 from typing import Union, List, Dict, Optional, Any
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from vllm import LLM, SamplingParams
+import math
+import torch.nn.functional as F
+
+import os
+import csv
+
+
+top_x = 5  # Number of top candidates to display
 
 
 class EngineType(Enum):
@@ -22,7 +30,8 @@ class TinyLLM:
         self.sampling_params = sampling_params
         # Listen to tokenizer_params first
         t_model = tokenizer_params.get(
-            "pretrained_model_name_or_path", engine_params.get("pretrained_model_name_or_path")
+            "pretrained_model_name_or_path",
+            engine_params.get("pretrained_model_name_or_path"),
         )
         # For simplicity, we use the model_name from engine_params if tokenizer_name
         # isn't specific.
@@ -70,7 +79,9 @@ class TinyLLM:
             is_chat = False
 
         # batch Strings
-        elif isinstance(inputs, list) and len(inputs) > 0 and isinstance(inputs[0], str):
+        elif (
+            isinstance(inputs, list) and len(inputs) > 0 and isinstance(inputs[0], str)
+        ):
             final_prompts = inputs
             is_batch = True
             is_chat = False
@@ -90,10 +101,14 @@ class TinyLLM:
 
         # Case 4:
         # [[{"role": "user", "content": "hi"},{"user":"q",}],[],[]]
-        elif isinstance(inputs, list) and len(inputs) > 0 and isinstance(inputs[0], list):
+        elif (
+            isinstance(inputs, list) and len(inputs) > 0 and isinstance(inputs[0], list)
+        ):
             # Apply template to every conversation in the batch
             final_prompts = [
-                self.tokenizer.apply_chat_template(c, tokenize=False, add_generation_prompt=True)
+                self.tokenizer.apply_chat_template(
+                    c, tokenize=False, add_generation_prompt=True
+                )
                 for c in inputs
             ]
             is_batch = True
@@ -118,20 +133,112 @@ class TinyLLM:
             prompts, return_tensors="pt", padding=True, truncation=True
         ).to(self.model.device)
         with torch.no_grad():
-            generated_ids = self.model.generate(
-                **model_inputs, **self.sampling_params, pad_token_id=self.tokenizer.pad_token_id
+            outputs = self.model.generate(
+                **model_inputs,
+                **self.sampling_params,
+                pad_token_id=self.tokenizer.pad_token_id,
+                return_dict_in_generate=True,
+                output_scores=True,
             )
         # Get the length of the input text(number of token)   input_ids is a two-dimensional matrix
         #  (tensor), usually of shape [Batch_Size, Sequence_Length].
+        generated_ids = outputs.sequences
         input_len = model_inputs.input_ids.shape[1]
         new_tokens = generated_ids[:, input_len:]
-        decoded_output = self.tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
+        decoded_output = self.tokenizer.batch_decode(
+            new_tokens, skip_special_tokens=True
+        )
+
+        batch_size = len(prompts)
+        for b in range(batch_size):
+            print(f"\n[HF Decode] Sentence {b} Text: {decoded_output[b]}")
+
+            # 遍历该句子生成的每一个 Step
+            for step_idx, step_logits in enumerate(outputs.scores):
+                # step_logits 的 shape 是 [batch_size, vocab_size]
+                # 获取当前句子 (b) 的 logits
+                probs = F.softmax(step_logits[b], dim=-1)
+                top_probs, top_indices = torch.topk(probs, k=top_x, dim=-1)
+
+                print(f"  Token {step_idx} top {top_x} candidates:")
+                for i in range(top_x):
+                    t_id = top_indices[i].item()
+                    t_str = self.tokenizer.decode(t_id)
+                    p_val = top_probs[i].item()
+                    print(f"    - '{t_str}': {p_val:.4f}")
+
+        for b in range(batch_size):
+            csv_rows = []
+            # outputs.scores 包含了生成的每一步
+            for step_logits in outputs.scores:
+                # step_logits shape: [batch_size, vocab_size]
+                probs = F.softmax(step_logits[b], dim=-1)
+                top_probs, top_indices = torch.topk(probs, k=top_x, dim=-1)
+
+                row = []
+                for i in range(top_x):
+                    t_id = top_indices[i].item()
+                    t_str = self.tokenizer.decode(t_id)
+                    p_val = top_probs[i].item()
+                    row.extend([t_str, f"{p_val:.4f}"])
+                csv_rows.append(row)
+
         return decoded_output
 
     def _generate_vllm_core(self, prompts: List[str]) -> List[str]:
         vllm_sampling = SamplingParams(**self.sampling_params)
         outputs = self.model.generate(prompts, vllm_sampling)
+
+        for output in outputs:
+            generated_text = output.outputs[0].text
+            token_logprobs = output.outputs[0].logprobs
+
+            print(f"Generated text: {generated_text}")
+            for i, logprob_dict in enumerate(token_logprobs):
+
+                print(f"Token {i} top {top_x} candidates:")
+                print(logprob_dict)
+                for token_id, logprob_obj in logprob_dict.items():
+                    # Convert logprob to linear probability
+                    prob = math.exp(logprob_obj.logprob)
+                    print(f"  Token: {logprob_obj.decoded_token} | Prob: {prob:.4f}")
+
+        final_texts = []
+        for idx, output in enumerate(outputs):
+            generated_text = output.outputs[0].text
+            final_texts.append(generated_text)
+            token_logprobs = output.outputs[0].logprobs
+
+            csv_rows = []
+            if token_logprobs:
+                for logprob_dict in token_logprobs:
+                    row = []
+                    # vLLM 的 logprobs 已经是按概率排序好的字典
+                    for token_id, logprob_obj in logprob_dict.items():
+                        prob = math.exp(logprob_obj.logprob)
+                        row.extend([logprob_obj.decoded_token, f"{prob:.4f}"])
+                    csv_rows.append(row)
+
+            # 保存为 CSV (文件名包含 index 以区分 batch)
+            self.save_probs_to_csv(csv_rows, f"vllm_output_prompt_{idx}.csv")
+
         return [output.outputs[0].text for output in outputs]
+
+    def save_probs_to_csv(self, data: List[List[Any]], filename: str):
+        """
+        将提取的概率数据保存为 CSV
+        data 格式: [[t1, p1, t2, p2...], [t1, p1, ...]] (n_tokens 行)
+        """
+        x = len(data[0]) // 2
+        headers = []
+        for i in range(1, x + 1):
+            headers.extend([f"Token_{i}", f"Prob_{i}"])
+
+        with open(filename, mode="w", newline="", encoding="utf-8-sig") as f:
+            writer = csv.writer(f)
+            writer.writerow(headers)
+            writer.writerows(data)
+        print(f"Successfully saved probabilities to {filename}")
 
 
 def run_test_suite(
@@ -150,7 +257,10 @@ def run_test_suite(
         f" Config: Temp={temperature} | MaxTokens={max_tokens} | GPU_Util={gpu_memory_utilization}"
     )
 
-    tokenizer_config = {"pretrained_model_name_or_path": model_id, "trust_remote_code": True}
+    tokenizer_config = {
+        "pretrained_model_name_or_path": model_id,
+        "trust_remote_code": True,
+    }
 
     if backend_name == "hf":
         engine_type = EngineType.HF
@@ -178,11 +288,13 @@ def run_test_suite(
             "model": model_id,
             "trust_remote_code": True,
             "gpu_memory_utilization": gpu_memory_utilization,
+            "max_logprobs": top_x,
         }
 
         sampling_params = {
             "max_tokens": max_tokens,  # vLLM 叫 max_tokens
             "temperature": temperature,
+            "logprobs": top_x,
         }
     else:
         raise ValueError(f"Unknown backend: {backend_name}")
@@ -199,7 +311,10 @@ def run_test_suite(
         return
 
     # ... (后续的测试用例代码 Generate ... 保持不变)
-    print(f"Output: {llm.generate('The capital of France is')}")
+    # print(f"Output: {llm.generate('The capital of France is')}")
+    print(
+        f"Output: {llm.generate(['1+1=', 'The opposite of hot is', 'What is the capital of Germany?'])}"
+    )
 
 
 # -----------------------------------------------------------------------------
@@ -214,8 +329,12 @@ if __name__ == "__main__":
     # 2. 调试：显存不够了？调低显存占用！
     # run_test_suite("vllm", MODEL, gpu_memory_utilization=0.5)
 
-    # 3. 实验：让模型变得更有创造力 (调高 temperature)
-    run_test_suite("vllm", MODEL, temperature=0.9, max_tokens=100)
+    print("\n" + "=" * 60 + "\n")
+    print(" test vllm")
+    run_test_suite("vllm", MODEL, temperature=0.9, max_tokens=10)
+    print("\n" + "=" * 60 + "\n")
+    print(" test hf")
+    run_test_suite("hf", MODEL, temperature=0.9, max_tokens=10)
 
     # 4. 调试：强制用 CPU 跑 Hugging Face
     # run_test_suite("hf", MODEL, device_map="cpu")
