@@ -79,9 +79,7 @@ class TinyLLM:
             is_chat = False
 
         # batch Strings
-        elif (
-            isinstance(inputs, list) and len(inputs) > 0 and isinstance(inputs[0], str)
-        ):
+        elif isinstance(inputs, list) and len(inputs) > 0 and isinstance(inputs[0], str):
             final_prompts = inputs
             is_batch = True
             is_chat = False
@@ -101,14 +99,10 @@ class TinyLLM:
 
         # Case 4:
         # [[{"role": "user", "content": "hi"},{"user":"q",}],[],[]]
-        elif (
-            isinstance(inputs, list) and len(inputs) > 0 and isinstance(inputs[0], list)
-        ):
+        elif isinstance(inputs, list) and len(inputs) > 0 and isinstance(inputs[0], list):
             # Apply template to every conversation in the batch
             final_prompts = [
-                self.tokenizer.apply_chat_template(
-                    c, tokenize=False, add_generation_prompt=True
-                )
+                self.tokenizer.apply_chat_template(c, tokenize=False, add_generation_prompt=True)
                 for c in inputs
             ]
             is_batch = True
@@ -145,9 +139,7 @@ class TinyLLM:
         generated_ids = outputs.sequences
         input_len = model_inputs.input_ids.shape[1]
         new_tokens = generated_ids[:, input_len:]
-        decoded_output = self.tokenizer.batch_decode(
-            new_tokens, skip_special_tokens=True
-        )
+        decoded_output = self.tokenizer.batch_decode(new_tokens, skip_special_tokens=True)
 
         batch_size = len(prompts)
         for b in range(batch_size):
@@ -195,7 +187,6 @@ class TinyLLM:
 
             print(f"Generated text: {generated_text}")
             for i, logprob_dict in enumerate(token_logprobs):
-
                 print(f"Token {i} top {top_x} candidates:")
                 print(logprob_dict)
                 for token_id, logprob_obj in logprob_dict.items():
