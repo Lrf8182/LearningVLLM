@@ -1,0 +1,28 @@
+backend: hf
+
+model_name_or_path: Qwen/Qwen2.5-0.5B-Instruct
+
+tokenizer_cfg:
+  pretrained_model_name_or_path: ${model_name_or_path}
+  # pretrained_model_name_or_path: ${..model_name_or_path}  # Also valid
+  trust_remote_code: true
+
+
+engine_cfg:
+  hf:
+    pretrained_model_name_or_path: ${...model_name_or_path}
+    trust_remote_code: ${tokenizer_cfg.trust_remote_code}
+    device_map: auto
+  vllm: null  # TODO
+
+sampling_params:
+  hf:
+    max_new_tokens: 10
+    temperature: 0.7
+    top_p: 0.9
+    do_sample: true
+  vllm: null  # TODO
+
+
+input_data:
+  - data/tests/inference_input_1.jsonl
