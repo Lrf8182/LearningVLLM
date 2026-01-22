@@ -22,10 +22,7 @@ def load_inference_data(data_path: str | Path) -> list[str]:
     return prompts
 
 
-
-def test_inference(
-    logger: logging.Logger, inference_cfg_path: str = "./configs/inference.yml"
-):
+def test_inference(logger: logging.Logger, inference_cfg_path: str = "./configs/inference.yml"):
     logger.critical("Running inference test...")
 
     inference_cfg = load_yaml(inference_cfg_path)
@@ -35,7 +32,7 @@ def test_inference(
         # engine_type=inference_cfg["backend"], is also acceptable
         engine_params=inference_cfg.engine_cfg[inference_cfg.backend],
         tokenizer_params=inference_cfg.tokenizer_cfg,
-        sampling_params=inference_cfg.sampling_params[inference_cfg.backend]
+        sampling_params=inference_cfg.sampling_params[inference_cfg.backend],
     )
 
     data: list[str] = load_inference_data(inference_cfg.input_data[0])
