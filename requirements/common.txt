@@ -5,3 +5,4 @@ torch
 colorlog
 pandas
 omegaconf
+accelerate
