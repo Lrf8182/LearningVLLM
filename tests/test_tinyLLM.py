@@ -13,12 +13,14 @@ def test_inference_config(logger: logging.Logger):
     logger.critical("Inference config test completed successfully.")
 
 
-def load_inference_data(data_path: str | Path) -> list[str]:
-    data_path = Path(data_path)
-    if not data_path.is_file():
-        raise FileNotFoundError(f"The file '{data_path}' was not found.")
-    data = load_jsonl(data_path)
-    prompts: list[str] = [item["prompt"] for item in data if "prompt" in item]
+def load_inference_data(data_paths: list[str | Path]) -> list[str]:
+    prompts = []
+    for data_path in data_paths:
+        data_path = Path(data_path)
+        if not data_path.is_file():
+            raise FileNotFoundError(f"The file '{data_path}' was not found.")
+        data = load_jsonl(data_path)
+        prompts.extend([item["prompt"] for item in data if "prompt" in item])
     return prompts
 
 
@@ -35,7 +37,7 @@ def test_inference(logger: logging.Logger, inference_cfg_path: str = "./configs/
         sampling_params=inference_cfg.sampling_params[inference_cfg.backend],
     )
 
-    data: list[str] = load_inference_data(inference_cfg.input_data[0])
+    data: list[str] = load_inference_data(inference_cfg.input_data)
 
     logger.info(llm.generate(inputs=data))
 
@@ -43,7 +45,7 @@ def test_inference(logger: logging.Logger, inference_cfg_path: str = "./configs/
 
 
 if __name__ == "__main__":
-    init_loggers("configs/loggers.yml")
+    init_loggers("configs/loggers.yml")  
     test_logger = logging.getLogger("DEBUG")
     test_inference_config(test_logger)
     test_inference(test_logger)

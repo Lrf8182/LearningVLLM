@@ -1,10 +1,9 @@
-backend: hf
+backend: vllm
 
 model_name_or_path: Qwen/Qwen2.5-0.5B-Instruct
 
 tokenizer_cfg:
   pretrained_model_name_or_path: ${model_name_or_path}
-  # pretrained_model_name_or_path: ${..model_name_or_path}  # Also valid
   trust_remote_code: true
 
 
@@ -13,16 +12,26 @@ engine_cfg:
     pretrained_model_name_or_path: ${...model_name_or_path}
     trust_remote_code: ${tokenizer_cfg.trust_remote_code}
     device_map: auto
-  vllm: null  # TODO
+  vllm: 
+    model: ${model_name_or_path}
+    trust_remote_code: true
+    gpu_memory_utilization: 0.8
+    max_logprobs: 20
 
 sampling_params:
   hf:
-    max_new_tokens: 10
+    max_new_tokens: 5
     temperature: 0.7
     top_p: 0.9
+    top_k: 10
     do_sample: true
-  vllm: null  # TODO
+  vllm: 
+    max_tokens: 10
+    temperature: 0.7
+    logprobs: 2
+    top_p: 0.9
+    top_k: 10
 
 
 input_data:
-  - data/tests/inference_input_1.jsonl
+  - data/tests/inference_input_1.jsonl   # - means a list 

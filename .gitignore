@@ -212,6 +212,18 @@ __marimo__/
 # /src/learning_vllm/z-others 两个/表示忽略的是项目根目录下的src/learning_vllm/z-others文件夹
 # /z-others/*.txt 忽略z-others文件夹下的所有txt文件
 
+# # 或者针对性忽略大文件后缀
+# *.safetensors
+# *.bin
+# *.pth
+# *.pt
+
+# # 忽略训练检查点文件夹
+# checkpoint-*/
+
+z-others/lora_output
+z-others/lora_adapter
+
 
 # 1. /z-others/*   要求忽略项目根目录下的z-others文件夹中的所有文件，/*让git了解文件夹内容， 才能使用后续的排除规则
 # 2. !/z-others/*.txt  忽略z-others文件夹下的所有文件，除了txt文件

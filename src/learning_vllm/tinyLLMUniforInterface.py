@@ -10,7 +10,7 @@ import os
 import csv
 
 
-top_x = 5  # Number of top candidates to display
+top_x = 2   # Number of top candidates to display
 
 
 class EngineType(Enum):
@@ -29,15 +29,14 @@ class TinyLLM:
         self.engine_type = engine_type
         self.sampling_params = sampling_params
         # Listen to tokenizer_params first
-        t_model = tokenizer_params.get(
-            "pretrained_model_name_or_path",
-            engine_params.get("pretrained_model_name_or_path"),
-        )
-        # For simplicity, we use the model_name from engine_params if tokenizer_name
-        # isn't specific.
-        if not t_model:
-            # Fallback if specific key isn't standard
-            t_model = list(engine_params.values())[0]
+        # t_model = tokenizer_params.get(
+        #     "pretrained_model_name_or_path",
+        #     engine_params.get("pretrained_model_name_or_path"),
+        # )
+
+        # if not t_model:
+        #     # Fallback if specific key isn't standard
+        #     t_model = list(engine_params.values())[0]
 
         print(f"[{self.engine_type.value.upper()}] Initializing...")
 
