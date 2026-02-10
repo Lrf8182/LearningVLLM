@@ -14,7 +14,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # print(f"Total number of parameters: {total_params}")
 
 
-from peft import LoraConfig, get_peft_model,PeftModel
+from peft import LoraConfig, get_peft_model, PeftModel
 
 # lora_config = LoraConfig(
 #     r=8,
@@ -92,20 +92,21 @@ model = AutoModelForCausalLM.from_pretrained("TinyLlama/TinyLlama-1.1B-Chat-v1.0
 adapter_path = "z-others/lora_adapter"
 trained_model = PeftModel.from_pretrained(model, adapter_path)
 trained_model.eval()
-merged_model = trained_model.merge_and_unload()  # 将 LoRA 权重合并到原始模型中，并卸载 LoRA 模块，得到一个完整的模型。
+merged_model = (
+    trained_model.merge_and_unload()
+)  # 将 LoRA 权重合并到原始模型中，并卸载 LoRA 模块，得到一个完整的模型。
 messages = [
     {"role": "user", "content": "Who is the winner of 2024 world cup?"},
 ]
 inputs = tokenizer.apply_chat_template(
-	messages,
-	add_generation_prompt=True,
-	tokenize=True,
-	return_dict=True,
-	return_tensors="pt",
+    messages,
+    add_generation_prompt=True,
+    tokenize=True,
+    return_dict=True,
+    return_tensors="pt",
 ).to(trained_model.device)
 
 outputs = trained_model.generate(**inputs, max_new_tokens=100)
-print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1]:]))
+print(tokenizer.decode(outputs[0][inputs["input_ids"].shape[-1] :]))
 outputs_merged = merged_model.generate(**inputs, max_new_tokens=100)
-print(tokenizer.decode(outputs_merged[0][inputs["input_ids"].shape[-1]:]))
-
+print(tokenizer.decode(outputs_merged[0][inputs["input_ids"].shape[-1] :]))

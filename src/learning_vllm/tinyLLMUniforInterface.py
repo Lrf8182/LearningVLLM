@@ -10,7 +10,7 @@ import os
 import csv
 
 
-top_x = 2   # Number of top candidates to display
+top_x = 2  # Number of top candidates to display
 
 
 class EngineType(Enum):

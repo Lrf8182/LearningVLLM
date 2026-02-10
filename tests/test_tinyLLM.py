@@ -45,7 +45,7 @@ def test_inference(logger: logging.Logger, inference_cfg_path: str = "./configs/
 
 
 if __name__ == "__main__":
-    init_loggers("configs/loggers.yml")  
+    init_loggers("configs/loggers.yml")
     test_logger = logging.getLogger("DEBUG")
     test_inference_config(test_logger)
     test_inference(test_logger)
